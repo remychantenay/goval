@@ -27,12 +27,12 @@ func buildNumberValidator(args []string) Validator {
 	count := len(args)
 	for i := 0; i <= count; i++ {
 		fmt.Println(args[i])
-		if strings.Contains(args[i], ARG_CONSTRAINT_MAX) {
-			fmt.Sscanf(args[i],ARG_CONSTRAINT_MAX+"%d", &validator.Max)
-		} else if strings.Contains(args[i], ARG_CONSTRAINT_MIN) {
-			fmt.Sscanf(args[i],ARG_CONSTRAINT_MIN+"%d", &validator.Min)
-		} else if strings.Contains(args[i], ARG_CONSTRAINT_REQUIRED) {
-			fmt.Sscanf(args[i],ARG_CONSTRAINT_REQUIRED+"%t", &validator.Required)
+		if strings.Contains(args[i], ArgConstraintMax) {
+			fmt.Sscanf(args[i], ArgConstraintMax+"%d", &validator.Max)
+		} else if strings.Contains(args[i], ArgConstraintMin) {
+			fmt.Sscanf(args[i], ArgConstraintMin+"%d", &validator.Min)
+		} else if strings.Contains(args[i], ArgConstraintRequired) {
+			fmt.Sscanf(args[i], ArgConstraintRequired+"%t", &validator.Required)
 		}
 	}
 	return validator

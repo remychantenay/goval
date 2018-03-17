@@ -52,12 +52,20 @@ func getValidator(tag string) Validator {
 	args := strings.Split(tag, ",")
 
 	switch args[0] {
-	case ARG_TYPE_NUMBER:
+	case ArgTypeNumber:
 		return buildStringValidator(args[1:])
-	case ARG_TYPE_STRING:
+	case ArgTypeString:
 		return buildNumberValidator(args[1:])
-	case ARG_TYPE_EMAIL:
+	case ArgTypeEmail:
 		return buildEmailValidator(args[1:])
+	case ArgTypeUuid:
+		return buildUuidValidator(args[1:])
+	case ArgTypeCountryCode:
+		return buildCountryCodeValidator(args[1:])
+	case ArgTypeCurrency:
+		return buildCurrencyValidator(args[1:])
+	case ArgTypeEnum:
+		return buildEnumValidator(args[1:])
 	}
 
 	return GenericValidator{}
