@@ -12,8 +12,8 @@ Simple validation library for Go.
 | email | min,max,required,domain | |
 | number | min,max,required | integer |
 | enum | values,required | |
-| country_code | exclude,excludeEu,required | ISO-Alpha-2 |
-| currency | exclude,required | ISO 4217 |
+| country_code | exclude,excludeEu,required | [ISO-Alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) |
+| currency | exclude,required | [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) |
 
 ## Installation
 ```bash
