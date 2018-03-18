@@ -34,18 +34,18 @@ func inValues(str string, valueList string) (bool, error) {
 		}
 	}
 
-	return false, fmt.Errorf("invalid value: %s", str)
+	return false, fmt.Errorf("is an invalid value: %s", str)
 }
 
 func buildEnumValidator(args []string) Validator {
 	validator := EnumValidator{false, ""}
 	count := len(args)
-	for i := 0; i <= count; i++ {
+	for i := 0; i < count; i++ {
 		fmt.Println(args[i])
 		if strings.Contains(args[i], ArgConstraintRequired) {
 			fmt.Sscanf(args[i], ArgConstraintRequired+"%t", &validator.Required)
 		} else if strings.Contains(args[i], ArgConstraintValues) {
-			fmt.Sscanf(args[i], ArgConstraintValues+"%t", &validator.Values)
+			fmt.Sscanf(args[i], ArgConstraintValues+"%s", &validator.Values)
 		}
 	}
 	return validator
