@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/remychantenay/goval.svg?branch=master)](https://travis-ci.org/remychantenay/goval)
+
 # goval
 TODO
 
