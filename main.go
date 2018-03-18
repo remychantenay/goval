@@ -18,10 +18,7 @@ func (v GenericValidator) Validate(val interface{}) (bool, error) {
 	return true, nil
 }
 
-func main() {
-
-}
-
+// ValidateStruct allows to validate any struct containing the nameTag
 func ValidateStruct(s interface{}) []error {
 	errs := []error{}
 
@@ -48,14 +45,15 @@ func ValidateStruct(s interface{}) []error {
 	return errs
 }
 
+// getValidator will return the appropriate validator
 func getValidator(tag string) Validator {
 	args := strings.Split(tag, ",")
 
 	switch args[0] {
 	case ArgTypeNumber:
-		return buildStringValidator(args[1:])
-	case ArgTypeString:
 		return buildNumberValidator(args[1:])
+	case ArgTypeString:
+		return buildStringValidator(args[1:])
 	case ArgTypeEmail:
 		return buildEmailValidator(args[1:])
 	case ArgTypeUuid:
