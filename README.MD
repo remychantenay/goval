@@ -1,5 +1,30 @@
+[![Build Status](https://travis-ci.org/remychantenay/goval.svg?branch=master)](https://travis-ci.org/remychantenay/goval)
+
 # goval
+TODO
 
-Todo
+## Tags & Constraints
+| Tag | Constraints | Additional Information |
+| ------ | ------ | ------ |
+| string | min,max,required | |
+| uuid | required | |
+| email | min,max,required,domain | |
+| number | min,max,required | integer |
+| enum | values,required | |
+| country_code | exclude,excludeEu,required | ISO-Alpha-2 |
+| currency | exclude,required | ISO 4217 |
 
-https://sosedoff.com/2016/07/16/golang-struct-tags.html
+## Usage
+### Install
+```bash
+go get https://github.com/remychantenay/goval
+```
+### Import
+```golang
+import (
+  goval https://github.com/remychantenay/goval
+)
+```
+
+## License
+TODO

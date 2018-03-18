@@ -16,23 +16,23 @@ func (v NumberValidator) Validate(val interface{}) (bool, error) {
 
 	num := val.(int)
 
-	if num < v.Min {return false, fmt.Errorf("should be greater than %v", v.Min)}
-	if v.Max >= v.Min && num > v.Max {return false, fmt.Errorf("should be less than %v", v.Max)}
+	if v.Min != -1 && num < v.Min {return false, fmt.Errorf("should be greater than %v", v.Min)}
+	if v.Max != -1 && v.Max >= v.Min && num > v.Max {return false, fmt.Errorf("should be less than %v", v.Max)}
 
 	return true, nil
 }
 
 func buildNumberValidator(args []string) Validator {
-	validator := NumberValidator{}
-	count := len(args)
+	validator := NumberValidator{-1, -1, false}
+	count := len(args)-1
 	for i := 0; i <= count; i++ {
 		fmt.Println(args[i])
-		if strings.Contains(args[i], ARG_CONSTRAINT_MAX) {
-			fmt.Sscanf(args[i],ARG_CONSTRAINT_MAX+"%d", &validator.Max)
-		} else if strings.Contains(args[i], ARG_CONSTRAINT_MIN) {
-			fmt.Sscanf(args[i],ARG_CONSTRAINT_MIN+"%d", &validator.Min)
-		} else if strings.Contains(args[i], ARG_CONSTRAINT_REQUIRED) {
-			fmt.Sscanf(args[i],ARG_CONSTRAINT_REQUIRED+"%t", &validator.Required)
+		if strings.Contains(args[i], ArgConstraintMax) {
+			fmt.Sscanf(args[i], ArgConstraintMax+"%d", &validator.Max)
+		} else if strings.Contains(args[i], ArgConstraintMin) {
+			fmt.Sscanf(args[i], ArgConstraintMin+"%d", &validator.Min)
+		} else if strings.Contains(args[i], ArgConstraintRequired) {
+			fmt.Sscanf(args[i], ArgConstraintRequired+"%t", &validator.Required)
 		}
 	}
 	return validator
