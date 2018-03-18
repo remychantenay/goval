@@ -9,7 +9,6 @@ TODO
 | email | min,max,required,domain | |
 | number | min,max,required | integer |
 | enum | values,required | |
-| enum | values,required | |
 | country_code | exclude,excludeEu,required | ISO-Alpha-2 |
 | currency | exclude,required | ISO 4217 |
 
