@@ -17,13 +17,13 @@ Simple validation library for Go.
 
 ## Installation
 ```bash
-go get https://github.com/remychantenay/goval
+go get -u github.com/remychantenay/goval
 ```
 
 ## Usage
 ```go
 import (
-  goval https://github.com/remychantenay/goval
+  goval github.com/remychantenay/goval
 )
 
 type SomeStruct struct {

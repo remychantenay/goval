@@ -2,3 +2,6 @@ language: go
 sudo: false
 go:
   - 1.9
+
+notifications:
+  email: false
