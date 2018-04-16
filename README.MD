@@ -23,7 +23,7 @@ go get -u github.com/remychantenay/goval
 ## Usage
 ```go
 import (
-  goval github.com/remychantenay/goval
+  _ "github.com/remychantenay/goval"
 )
 
 type SomeStruct struct {
