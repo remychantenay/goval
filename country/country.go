@@ -1,9 +1,11 @@
-package goval
+package country
 
 import (
 	"fmt"
 	"strings"
 	"regexp"
+	"github.com/remychantenay/goval/generic"
+	"github.com/remychantenay/goval/constant"
 )
 
 
@@ -34,25 +36,32 @@ func (v CountryCodeValidator) Validate(val interface{}) (bool, error) {
 			if !countryCodeRegExNonEu.MatchString(str) {return false, fmt.Errorf("is an invalid country code")}
 		}
 
-		b, err := valueExcluded(str, v.Exclude)
+		b, err := generic.ValueExcluded(str, v.Exclude)
 		if !b { return b, err }
 	}
 
 	return true, nil
 }
 
-func buildCountryCodeValidator(args []string) Validator {
+// BuildCountryCodeValidator allows to build the validator for country codes (e.g. US)
+func BuildCountryCodeValidator(args []string) generic.Validator {
 	validator := CountryCodeValidator{false, false, ""}
 	count := len(args)
 	for i := 0; i < count; i++ {
 		fmt.Println(args[i])
-		if strings.Contains(args[i], ArgConstraintRequired) {
-			fmt.Sscanf(args[i], ArgConstraintRequired+"%t", &validator.Required)
-		} else if strings.Contains(args[i], ArgConstraintExcludeEu) {
-			fmt.Sscanf(args[i], ArgConstraintExcludeEu+"%t", &validator.ExcludeEu)
-		} else if strings.Contains(args[i], ArgConstraintExclude) {
-			fmt.Sscanf(args[i], ArgConstraintExclude+"%s", &validator.Exclude)
+		if strings.Contains(args[i], constant.ArgConstraintRequired) {
+			fmt.Sscanf(args[i], constant.ArgConstraintRequired+"%t", &validator.Required)
+		} else if strings.Contains(args[i], constant.ArgConstraintExcludeEu) {
+			fmt.Sscanf(args[i], constant.ArgConstraintExcludeEu+"%t", &validator.ExcludeEu)
+		} else if strings.Contains(args[i], constant.ArgConstraintExclude) {
+			fmt.Sscanf(args[i], constant.ArgConstraintExclude+"%s", &validator.Exclude)
 		}
 	}
 	return validator
+}
+
+// BuildCountryCodeValidator allows to build the validator for country codes (e.g. US), mainly used for unit tests
+func BuildCountryCodeValidatorWithFullTag(tag string) generic.Validator {
+	args := strings.Split(tag, ",")
+	return BuildCountryCodeValidator(args[1:])
 }

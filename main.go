@@ -4,19 +4,17 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"github.com/remychantenay/goval/country"
+	"github.com/remychantenay/goval/currency"
+	"github.com/remychantenay/goval/generic"
+	"github.com/remychantenay/goval/constant"
+	"github.com/remychantenay/goval/email"
+	"github.com/remychantenay/goval/uuid"
+	"github.com/remychantenay/goval/enum"
+	"github.com/remychantenay/goval/number"
+	str "github.com/remychantenay/goval/string"
 )
 
-const nameTag = "goval"
-
-type Validator interface {
-	Validate(interface{}) (bool, error)
-}
-
-type GenericValidator struct {}
-
-func (v GenericValidator) Validate(val interface{}) (bool, error) {
-	return true, nil
-}
 
 // ValidateStruct allows to validate any struct containing the nameTag
 func ValidateStruct(s interface{}) []error {
@@ -25,7 +23,7 @@ func ValidateStruct(s interface{}) []error {
 	structValue := reflect.ValueOf(s)
 
 	for i := 0; i < structValue.NumField(); i++ {
-		tag := structValue.Type().Field(i).Tag.Get(nameTag)
+		tag := generic.ExtractTag(structValue, i)
 
 		// Skip if tag is not defined or ignored
 		if tag == "" || tag == "-" {
@@ -46,25 +44,25 @@ func ValidateStruct(s interface{}) []error {
 }
 
 // getValidator will return the appropriate validator
-func getValidator(tag string) Validator {
+func getValidator(tag string) generic.Validator {
 	args := strings.Split(tag, ",")
 
 	switch args[0] {
-	case ArgTypeNumber:
-		return buildNumberValidator(args[1:])
-	case ArgTypeString:
-		return buildStringValidator(args[1:])
-	case ArgTypeEmail:
-		return buildEmailValidator(args[1:])
-	case ArgTypeUuid:
-		return buildUuidValidator(args[1:])
-	case ArgTypeCountryCode:
-		return buildCountryCodeValidator(args[1:])
-	case ArgTypeCurrency:
-		return buildCurrencyValidator(args[1:])
-	case ArgTypeEnum:
-		return buildEnumValidator(args[1:])
+	case constant.ArgTypeNumber:
+		return number.BuildNumberValidator(args[1:])
+	case constant.ArgTypeString:
+		return str.BuildStringValidator(args[1:])
+	case constant.ArgTypeEmail:
+		return email.BuildEmailValidator(args[1:])
+	case constant.ArgTypeUuid:
+		return uuid.BuildUuidValidator(args[1:])
+	case constant.ArgTypeCountryCode:
+		return country.BuildCountryCodeValidator(args[1:])
+	case constant.ArgTypeCurrency:
+		return currency.BuildCurrencyValidator(args[1:])
+	case constant.ArgTypeEnum:
+		return enum.BuildEnumValidator(args[1:])
 	}
 
-	return GenericValidator{}
+	return generic.GenericValidator{}
 }
