@@ -1,9 +1,11 @@
-package goval
+package email
 
 import (
 	"fmt"
 	"strings"
 	"regexp"
+	"github.com/remychantenay/goval/generic"
+	"github.com/remychantenay/goval/constant"
 )
 
 
@@ -35,20 +37,27 @@ func (v EmailValidator) Validate(val interface{}) (bool, error) {
 	return true, nil
 }
 
-func buildEmailValidator(args []string) Validator {
+// BuildEmailValidator allows to build the validator for email addresses
+func BuildEmailValidator(args []string) generic.Validator {
 	validator := EmailValidator{-1,-1,false, ""}
 	count := len(args)-1
 	for i := 0; i <= count; i++ {
 		fmt.Println(args[i])
-		if strings.Contains(args[i], ArgConstraintMax) {
-			fmt.Sscanf(args[i], ArgConstraintMax+"%d", &validator.Max)
-		} else if strings.Contains(args[i], ArgConstraintMin) {
-			fmt.Sscanf(args[i], ArgConstraintMin+"%d", &validator.Min)
-		} else if strings.Contains(args[i], ArgConstraintRequired) {
-			fmt.Sscanf(args[i], ArgConstraintRequired+"%t", &validator.Required)
-		} else if strings.Contains(args[i], ArgConstraintDomain) {
-			fmt.Sscanf(args[i], ArgConstraintDomain+"%s", &validator.Domain)
+		if strings.Contains(args[i], constant.ArgConstraintMax) {
+			fmt.Sscanf(args[i], constant.ArgConstraintMax+"%d", &validator.Max)
+		} else if strings.Contains(args[i], constant.ArgConstraintMin) {
+			fmt.Sscanf(args[i], constant.ArgConstraintMin+"%d", &validator.Min)
+		} else if strings.Contains(args[i], constant.ArgConstraintRequired) {
+			fmt.Sscanf(args[i], constant.ArgConstraintRequired+"%t", &validator.Required)
+		} else if strings.Contains(args[i], constant.ArgConstraintDomain) {
+			fmt.Sscanf(args[i],constant.ArgConstraintDomain+"%s", &validator.Domain)
 		}
 	}
 	return validator
+}
+
+// BuildEmailValidator allows to build the validator for email addresses, mainly used for unit tests
+func BuildEmailValidatorWithFullTag(tag string) generic.Validator {
+	args := strings.Split(tag, ",")
+	return BuildEmailValidator(args[1:])
 }

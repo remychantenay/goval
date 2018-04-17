@@ -1,9 +1,11 @@
-package goval
+package uuid
 
 import (
 	"fmt"
 	"strings"
 	"github.com/satori/go.uuid"
+	"github.com/remychantenay/goval/generic"
+	"github.com/remychantenay/goval/constant"
 )
 
 
@@ -29,14 +31,21 @@ func (v UuidValidator) Validate(val interface{}) (bool, error) {
 	return true, nil
 }
 
-func buildUuidValidator(args []string) Validator {
+// BuildUuidValidator allows to build the validator for UUIDs
+func BuildUuidValidator(args []string) generic.Validator {
 	validator := UuidValidator{}
 	count := len(args)
 	for i := 0; i < count; i++ {
 		fmt.Println(args[i])
-		if strings.Contains(args[i], ArgConstraintRequired) {
-			fmt.Sscanf(args[i], ArgConstraintRequired+"%t", &validator.Required)
+		if strings.Contains(args[i], constant.ArgConstraintRequired) {
+			fmt.Sscanf(args[i], constant.ArgConstraintRequired+"%t", &validator.Required)
 		}
 	}
 	return validator
+}
+
+// BuildUuidValidator allows to build the validator for UUIDs, mainly used for unit tests
+func BuildUuidValidatorWithFullTag(tag string) generic.Validator {
+	args := strings.Split(tag, ",")
+	return BuildUuidValidator(args[1:])
 }

@@ -1,8 +1,10 @@
-package goval
+package enum
 
 import (
 	"fmt"
 	"strings"
+	"github.com/remychantenay/goval/generic"
+	"github.com/remychantenay/goval/constant"
 )
 
 
@@ -37,16 +39,23 @@ func inValues(str string, valueList string) (bool, error) {
 	return false, fmt.Errorf("is an invalid value: %s", str)
 }
 
-func buildEnumValidator(args []string) Validator {
+// BuildEnumValidator allows to build the validator for enums
+func BuildEnumValidator(args []string) generic.Validator {
 	validator := EnumValidator{false, ""}
 	count := len(args)
 	for i := 0; i < count; i++ {
 		fmt.Println(args[i])
-		if strings.Contains(args[i], ArgConstraintRequired) {
-			fmt.Sscanf(args[i], ArgConstraintRequired+"%t", &validator.Required)
-		} else if strings.Contains(args[i], ArgConstraintValues) {
-			fmt.Sscanf(args[i], ArgConstraintValues+"%s", &validator.Values)
+		if strings.Contains(args[i], constant.ArgConstraintRequired) {
+			fmt.Sscanf(args[i], constant.ArgConstraintRequired+"%t", &validator.Required)
+		} else if strings.Contains(args[i], constant.ArgConstraintValues) {
+			fmt.Sscanf(args[i], constant.ArgConstraintValues+"%s", &validator.Values)
 		}
 	}
 	return validator
+}
+
+// BuildEnumValidator allows to build the validator for enums, mainly used for unit tests
+func BuildEnumValidatorWithFullTag(tag string) generic.Validator {
+	args := strings.Split(tag, ",")
+	return BuildEnumValidator(args[1:])
 }

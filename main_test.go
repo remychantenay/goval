@@ -4,16 +4,13 @@ import (
 	"testing"
 )
 
-type TestCountry struct {
-	Value 	string		`goval:"country_code,required=true,exclude=US,excludeEu=true"` // With constraints
-}
-
-type TestCountry2 struct {
-	Value 	string		`goval:"country_code"` // Without constraints
+type TestCountryCode struct {
+	Value 					string		`goval:"country_code,required=true,exclude=US,excludeEu=true"`
+	ValueWithoutConstraint 	string		`goval:"country_code"`
 }
 
 func TestCountryShort(t *testing.T) {
-	actualResult := ValidateStruct(TestCountry{"E"})[0]
+	actualResult := ValidateStruct(TestCountryCode{"E", ""})[0]
 	var expectedResult = "Value should be 2 characters long"
 
 	if actualResult.Error() != expectedResult {
@@ -22,7 +19,7 @@ func TestCountryShort(t *testing.T) {
 }
 
 func TestCountryTooLong(t *testing.T) {
-	actualResult := ValidateStruct(TestCountry{"EEE"})[0]
+	actualResult := ValidateStruct(TestCountryCode{"EEEE", ""})[0]
 	var expectedResult = "Value should be 2 characters long"
 
 	if actualResult.Error() != expectedResult {
@@ -31,7 +28,7 @@ func TestCountryTooLong(t *testing.T) {
 }
 
 func TestCountryInvalid(t *testing.T) {
-	actualResult := ValidateStruct(TestCountry{"RR"})[0]
+	actualResult := ValidateStruct(TestCountryCode{"RR", ""})[0]
 	var expectedResult = "Value is an invalid country code"
 
 	if actualResult.Error() != expectedResult {
@@ -40,7 +37,7 @@ func TestCountryInvalid(t *testing.T) {
 }
 
 func TestCountryEmptyWithConstraint(t *testing.T) {
-	actualResult := ValidateStruct(TestCountry{""})[0]
+	actualResult := ValidateStruct(TestCountryCode{"", ""})[0]
 	var expectedResult = "Value cannot be blank"
 
 	if actualResult.Error() != expectedResult {
@@ -49,7 +46,7 @@ func TestCountryEmptyWithConstraint(t *testing.T) {
 }
 
 func TestCountryExcludedWithConstraint(t *testing.T) {
-	actualResult := ValidateStruct(TestCountry{"US"})[0]
+	actualResult := ValidateStruct(TestCountryCode{"US", ""})[0]
 	var expectedResult = "Value is excluded"
 
 	if actualResult.Error() != expectedResult {
@@ -58,7 +55,7 @@ func TestCountryExcludedWithConstraint(t *testing.T) {
 }
 
 func TestCountryOK(t *testing.T) {
-	actualResult := ValidateStruct(TestCountry{"CH"})
+	actualResult := ValidateStruct(TestCountryCode{"CH", ""})
 
 	if len(actualResult) != 0 {
 		t.Fatalf("No error expected but got %v error(s)", len(actualResult))
@@ -66,7 +63,7 @@ func TestCountryOK(t *testing.T) {
 }
 
 func TestCountryEmptyWithoutConstraint(t *testing.T) {
-	actualResult := ValidateStruct(TestCountry2{""})
+	actualResult := ValidateStruct(TestCountryCode{"CH", ""})
 
 	if len(actualResult) != 0 {
 		t.Fatalf("No error expected but got %v error(s)", len(actualResult))
