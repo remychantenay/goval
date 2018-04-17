@@ -1,4 +1,4 @@
-package goval
+package constant
 
 const ArgTypeString = "string"
 const ArgTypeNumber = "number"
