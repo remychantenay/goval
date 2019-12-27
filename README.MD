@@ -10,7 +10,7 @@ Simple validation library for Go.
 | string | min,max,required | |
 | uuid | required | |
 | email | min,max,required,domain | |
-| number | min,max,required | integer |
+| number | min,max,required | int64 |
 | enum | values,required | |
 | country_code | exclude,excludeEu,required | [ISO-Alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) |
 | currency | exclude,required | [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) |
@@ -23,7 +23,7 @@ go get -u github.com/remychantenay/goval
 ## Usage
 ```go
 import (
-  _ "github.com/remychantenay/goval"
+  "github.com/remychantenay/goval"
 )
 
 type SomeStruct struct {
@@ -48,6 +48,6 @@ for i, err := range result {
 https://godoc.org/github.com/remychantenay/goval
 
 ## License
-Copyright (C) 2018 Chantenay Remy
+Copyright (C) 2019 Chantenay Remy
 
 Distributed under the MIT License.

@@ -34,7 +34,6 @@ func BuildStringValidator(args []string) generic.Validator {
 	validator := StringValidator{-1, -1, false}
 	count := len(args)
 	for i := 0; i < count; i++ {
-		fmt.Println(args[i])
 		if strings.Contains(args[i], constant.ArgConstraintMax) {
 			fmt.Sscanf(args[i], constant.ArgConstraintMax+"%d", &validator.Max)
 		} else if strings.Contains(args[i], constant.ArgConstraintMin) {

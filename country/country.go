@@ -48,7 +48,6 @@ func BuildCountryCodeValidator(args []string) generic.Validator {
 	validator := CountryCodeValidator{false, false, ""}
 	count := len(args)
 	for i := 0; i < count; i++ {
-		fmt.Println(args[i])
 		if strings.Contains(args[i], constant.ArgConstraintRequired) {
 			fmt.Sscanf(args[i], constant.ArgConstraintRequired+"%t", &validator.Required)
 		} else if strings.Contains(args[i], constant.ArgConstraintExcludeEu) {
