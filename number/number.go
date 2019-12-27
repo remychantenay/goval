@@ -8,15 +8,15 @@ import (
 )
 
 type NumberValidator struct {
-	Min int
-	Max int
+	Min int64
+	Max int64
 	Required bool
 }
 
 func (v NumberValidator) Validate(val interface{}) (bool, error) {
 	if val == nil && v.Required { return false, fmt.Errorf("cannot be nil") }
 
-	num := val.(int)
+	num := val.(int64)
 
 	if v.Min != -1 && num < v.Min {return false, fmt.Errorf("should be greater than %v", v.Min)}
 	if v.Max != -1 && v.Max >= v.Min && num > v.Max {return false, fmt.Errorf("should be less than %v", v.Max)}
@@ -29,7 +29,6 @@ func BuildNumberValidator(args []string) generic.Validator {
 	validator := NumberValidator{-1, -1, false}
 	count := len(args)-1
 	for i := 0; i <= count; i++ {
-		fmt.Println(args[i])
 		if strings.Contains(args[i], constant.ArgConstraintMax) {
 			fmt.Sscanf(args[i], constant.ArgConstraintMax+"%d", &validator.Max)
 		} else if strings.Contains(args[i], constant.ArgConstraintMin) {

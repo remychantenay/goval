@@ -7,8 +7,8 @@ import (
 )
 
 type TestNumber struct {
-	Value 					int		`goval:"number,min=10,max=15,required=true"`
-	ValueWithoutConstraint 	int		`goval:"number"`
+	Value 					int64		`goval:"number,min=10,max=15,required=true"`
+	ValueWithoutConstraint 	int64		`goval:"number"`
 }
 
 func validate(testedStruct TestNumber, index int) (bool, error) {

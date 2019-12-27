@@ -42,7 +42,6 @@ func BuildEmailValidator(args []string) generic.Validator {
 	validator := EmailValidator{-1,-1,false, ""}
 	count := len(args)-1
 	for i := 0; i <= count; i++ {
-		fmt.Println(args[i])
 		if strings.Contains(args[i], constant.ArgConstraintMax) {
 			fmt.Sscanf(args[i], constant.ArgConstraintMax+"%d", &validator.Max)
 		} else if strings.Contains(args[i], constant.ArgConstraintMin) {

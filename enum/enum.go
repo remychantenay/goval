@@ -44,7 +44,6 @@ func BuildEnumValidator(args []string) generic.Validator {
 	validator := EnumValidator{false, ""}
 	count := len(args)
 	for i := 0; i < count; i++ {
-		fmt.Println(args[i])
 		if strings.Contains(args[i], constant.ArgConstraintRequired) {
 			fmt.Sscanf(args[i], constant.ArgConstraintRequired+"%t", &validator.Required)
 		} else if strings.Contains(args[i], constant.ArgConstraintValues) {
