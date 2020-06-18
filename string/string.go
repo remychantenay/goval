@@ -2,51 +2,63 @@ package string
 
 import (
 	"fmt"
-	"strings"
 	"github.com/remychantenay/goval/generic"
-	"github.com/remychantenay/goval/constant"
+	"strings"
 )
 
+const (
+	// argConstraintRequired
+	argConstraintRequired = "required="
 
-type StringValidator struct {
-	Min int
-	Max int
+	// argConstraintMax
+	argConstraintMax = "max="
+
+	// argConstraintMin
+	argConstraintMin = "min="
+)
+
+type stringValidator struct {
+	Min      int
+	Max      int
 	Required bool
 }
 
-func (v StringValidator) Validate(val interface{}) (bool, error) {
-	if val == nil && v.Required { return false, fmt.Errorf("cannot be nil") }
+// Validate a specific field
+func (v *stringValidator) Validate(val interface{}) (bool, error) {
+	if val == nil && v.Required {
+		return false, fmt.Errorf("cannot be nil")
+	}
 
 	l := len(val.(string))
 
 	if l == 0 {
-		if v.Required {return false, fmt.Errorf("cannot be blank")}
+		if v.Required {
+			return false, fmt.Errorf("cannot be blank")
+		}
 	} else {
-		if v.Min != -1 && l < v.Min {return false, fmt.Errorf("should be at least %v characters long", v.Min)}
-		if v.Max != -1 && v.Min != -1 && v.Max >= v.Min && l > v.Max {return false, fmt.Errorf("should be less than %v characters long", v.Max)}
+		if v.Min != -1 && l < v.Min {
+			return false, fmt.Errorf("should be at least %v characters long", v.Min)
+		}
+		if v.Max != -1 && v.Min != -1 && v.Max >= v.Min && l > v.Max {
+			return false, fmt.Errorf("should be less than %v characters long", v.Max)
+		}
 	}
 
 	return true, nil
 }
 
-// BuildStringValidator allows to build the validator for strings
-func BuildStringValidator(args []string) generic.Validator {
-	validator := StringValidator{-1, -1, false}
+// NewValidator builds the validator for strings
+func NewValidator(args []string) generic.Validator {
+	validator := stringValidator{-1, -1, false}
 	count := len(args)
 	for i := 0; i < count; i++ {
-		if strings.Contains(args[i], constant.ArgConstraintMax) {
-			fmt.Sscanf(args[i], constant.ArgConstraintMax+"%d", &validator.Max)
-		} else if strings.Contains(args[i], constant.ArgConstraintMin) {
-			fmt.Sscanf(args[i], constant.ArgConstraintMin+"%d", &validator.Min)
-		} else if strings.Contains(args[i], constant.ArgConstraintRequired) {
-			fmt.Sscanf(args[i], constant.ArgConstraintRequired+"%t", &validator.Required)
+		if strings.Contains(args[i], argConstraintMax) {
+			fmt.Sscanf(args[i], argConstraintMax+"%d", &validator.Max)
+		} else if strings.Contains(args[i], argConstraintMin) {
+			fmt.Sscanf(args[i], argConstraintMin+"%d", &validator.Min)
+		} else if strings.Contains(args[i], argConstraintRequired) {
+			fmt.Sscanf(args[i], argConstraintRequired+"%t", &validator.Required)
 		}
 	}
-	return validator
-}
-
-// BuildStringValidator allows to build the validator for strings, mainly used for unit tests
-func BuildStringValidatorWithFullTag(tag string) generic.Validator {
-	args := strings.Split(tag, ",")
-	return BuildStringValidator(args[1:])
+	return &validator
 }

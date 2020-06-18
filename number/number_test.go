@@ -1,60 +1,96 @@
 package number
 
 import (
-	"testing"
-	"reflect"
 	"github.com/remychantenay/goval/generic"
+	"reflect"
+	"strings"
+	"testing"
 )
 
-type TestNumber struct {
-	Value 					int64		`goval:"number,min=10,max=15,required=true"`
-	ValueWithoutConstraint 	int64		`goval:"number"`
+// Number represents the struct under test
+type Number struct {
+	Value                  int64 `goval:"number,min=10,max=15,required=true"`
+	ValueWithoutConstraint int64 `goval:"number"`
 }
 
-func validate(testedStruct TestNumber, index int) (bool, error) {
+func TestNumber_Err(t *testing.T) {
+	tests := []struct {
+		description      string
+		expectedErrorMsg string
+		with             Number
+		index            int
+	}{
+		{
+			description:      "Too small with constraint",
+			expectedErrorMsg: "should be greater than 10",
+			with: Number{
+				Value: 9,
+			},
+			index: 0,
+		},
+		{
+			description:      "Too large with constraint",
+			expectedErrorMsg: "should be less than 15",
+			with: Number{
+				Value: 16,
+			},
+			index: 0,
+		},
+	}
+
+	for _, test := range tests {
+		_, err := validate(test.with, test.index)
+		if err == nil {
+			t.Fatalf("%s -> was expecting %s", test.description, test.expectedErrorMsg)
+		}
+
+		if err.Error() != test.expectedErrorMsg {
+			t.Fatalf("%s -> Got %s but expected %s ", test.description, err.Error(), test.expectedErrorMsg)
+		}
+	}
+}
+
+func TestNumber_Success(t *testing.T) {
+	tests := []struct {
+		description string
+		with        Number
+		index       int
+	}{
+		{
+			description: "Success with or without constraint",
+			with: Number{
+				Value: 13,
+			},
+			index: 0,
+		},
+		{
+			description: "Too small without constraint",
+			with: Number{
+				Value: 9,
+			},
+			index: 1,
+		},
+		{
+			description: "Too large without constraint",
+			with: Number{
+				Value: 16,
+			},
+			index: 1,
+		},
+	}
+
+	for _, test := range tests {
+		_, err := validate(test.with, test.index)
+		if err != nil {
+			t.Fatalf("%s -> was not expecting error but got %s", test.description, err.Error())
+		}
+	}
+}
+
+// validate is a convenience function
+func validate(testedStruct Number, index int) (bool, error) {
 	structValue := reflect.ValueOf(testedStruct)
-	return BuildNumberValidatorWithFullTag(generic.ExtractTag(structValue, index)).Validate(structValue.Field(index).Interface())
-}
-
-func TestNumberTooSmallWithConstraint(t *testing.T) {
-	_, actualResult := validate(TestNumber{9, 0}, 0)
-	var expectedResult = "should be greater than 10"
-
-	if actualResult.Error() != expectedResult {
-		t.Fatalf("Expected %s but got %s", expectedResult, actualResult)
-	}
-}
-
-
-func TestNumberTooLargeWithConstraint(t *testing.T) {
-	_, actualResult := validate(TestNumber{16, 0}, 0)
-	var expectedResult = "should be less than 15"
-
-	if actualResult.Error() != expectedResult {
-		t.Fatalf("Expected %s but got %s", expectedResult, actualResult)
-	}
-}
-
-func TestNumberOK(t *testing.T) {
-	_, actualResult := validate(TestNumber{13, 0}, 0)
-
-	if actualResult != nil {
-		t.Fatalf("No error expected but got %s", actualResult.Error())
-	}
-}
-
-func TestNumberTooSmallWithoutConstraint(t *testing.T) {
-	_, actualResult := validate(TestNumber{0, 9}, 1)
-
-	if actualResult != nil {
-		t.Fatalf("No error expected but got %s", actualResult.Error())
-	}
-}
-
-func TestNumberTooLongWithoutConstraint(t *testing.T) {
-	_, actualResult := validate(TestNumber{0, 16}, 1)
-
-	if actualResult != nil {
-		t.Fatalf("No error expected but got %v error(s)", actualResult.Error())
-	}
+	tag := generic.ExtractTag(structValue, index)
+	args := strings.Split(tag, ",")
+	return NewValidator(args[1:]).Validate(structValue.Field(index).Interface())
 }

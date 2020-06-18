@@ -1,78 +1,96 @@
 package currency
 
 import (
-	"testing"
-	"reflect"
 	"github.com/remychantenay/goval/generic"
+	"reflect"
+	"strings"
+	"testing"
 )
 
-type TestCurrency struct {
-	Value 					string		`goval:"currency,required=true,exclude=EUR|GBP"`
-	ValueWithoutConstraint 	string		`goval:"currency"`
+// Currency represents the struct under test
+type Currency struct {
+	Value                  string `goval:"currency,required=true,exclude=EUR|GBP"`
+	ValueWithoutConstraint string `goval:"currency"`
 }
 
-func validate(testedStruct TestCurrency, index int) (bool, error) {
+func TestCurrency_Err(t *testing.T) {
+	tests := []struct {
+		description      string
+		expectedErrorMsg string
+		with             Currency
+		index            int
+	}{
+		{
+			description:      "Too short",
+			expectedErrorMsg: "should be 3 characters long",
+			with: Currency{
+				Value:                  "EU",
+				ValueWithoutConstraint: "",
+			},
+			index: 0,
+		},
+		{
+			description:      "Too long",
+			expectedErrorMsg: "should be 3 characters long",
+			with: Currency{
+				Value:                  "EURR",
+				ValueWithoutConstraint: "",
+			},
+			index: 0,
+		},
+		{
+			description:      "Invalid",
+			expectedErrorMsg: "is an invalid currency",
+			with: Currency{
+				Value:                  "GGG",
+				ValueWithoutConstraint: "",
+			},
+			index: 0,
+		},
+		{
+			description:      "Empty with constraint",
+			expectedErrorMsg: "cannot be blank",
+			with: Currency{
+				Value:                  "",
+				ValueWithoutConstraint: "",
+			},
+			index: 0,
+		},
+		{
+			description:      "Excluded currency",
+			expectedErrorMsg: "is excluded",
+			with: Currency{
+				Value:                  "GBP",
+				ValueWithoutConstraint: "",
+			},
+			index: 0,
+		},
+	}
+
+	for _, test := range tests {
+		_, err := validate(test.with, test.index)
+		if err == nil {
+			t.Fatalf("%s -> was expecting %s", test.description, test.expectedErrorMsg)
+		}
+
+		if err.Error() != test.expectedErrorMsg {
+			t.Fatalf("%s -> Got %s but expected %s ", test.description, err.Error(), test.expectedErrorMsg)
+		}
+	}
+}
+
+func TestCurrency_Success(t *testing.T) {
+	_, err := validate(Currency{"USD", ""}, 0)
+
+	if err != nil {
+		t.Fatalf("No error expected but got %s", err.Error())
+	}
+}
+
+// validate is a convenience function
+func validate(testedStruct Currency, index int) (bool, error) {
 	structValue := reflect.ValueOf(testedStruct)
-	return BuildCurrencyValidatorWithFullTag(generic.ExtractTag(structValue, index)).Validate(structValue.Field(index).Interface())
-}
-
-func TestCurrencyShort(t *testing.T) {
-	_, actualResult := validate(TestCurrency{"EU", ""}, 0)
-	var expectedResult = "should be 3 characters long"
-
-	if actualResult.Error() != expectedResult {
-		t.Fatalf("Expected %s but got %s", expectedResult, actualResult)
-	}
-}
-
-func TestCurrencyTooLong(t *testing.T) {
-	_, actualResult := validate(TestCurrency{"EURR", ""}, 0)
-	var expectedResult = "should be 3 characters long"
-
-	if actualResult.Error() != expectedResult {
-		t.Fatalf("Expected %s but got %s", expectedResult, actualResult)
-	}
-}
-
-func TestCurrencyInvalid(t *testing.T) {
-	_, actualResult := validate(TestCurrency{"GGG", ""}, 0)
-	var expectedResult = "is an invalid currency"
-
-	if actualResult.Error() != expectedResult {
-		t.Fatalf("Expected %s but got %s", expectedResult, actualResult)
-	}
-}
-
-func TestCurrencyEmptyWithConstraint(t *testing.T) {
-	_, actualResult := validate(TestCurrency{"", ""}, 0)
-	var expectedResult = "cannot be blank"
-
-	if actualResult.Error() != expectedResult {
-		t.Fatalf("Expected %s but got %s", expectedResult, actualResult)
-	}
-}
-
-func TestCurrencyExcludedWithConstraint(t *testing.T) {
-	_, actualResult := validate(TestCurrency{"GBP", ""}, 0)
-	var expectedResult = "is excluded"
-
-	if actualResult.Error() != expectedResult {
-		t.Fatalf("Expected %s but got %s", expectedResult, actualResult)
-	}
-}
-
-func TestCurrencyOK(t *testing.T) {
-	_, actualResult := validate(TestCurrency{"USD", ""}, 0)
-
-	if actualResult != nil {
-		t.Fatalf("No error expected but got %s", actualResult.Error())
-	}
-}
-
-func TestCurrencyEmptyWithoutConstraint(t *testing.T) {
-	_, actualResult := validate(TestCurrency{"EU", ""}, 1)
-
-	if actualResult != nil {
-		t.Fatalf("No error expected but got %s", actualResult.Error())
-	}
+	tag := generic.ExtractTag(structValue, index)
+	args := strings.Split(tag, ",")
+	return NewValidator(args[1:]).Validate(structValue.Field(index).Interface())
 }

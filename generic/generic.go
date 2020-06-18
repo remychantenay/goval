@@ -1,18 +1,20 @@
 package generic
 
 import (
-	"strings"
 	"fmt"
 	"reflect"
+	"strings"
 )
 
+// NameTag to add to the struct fields to be validated
 const NameTag = "goval"
 
+// Validator interface
 type Validator interface {
-	Validate(interface{}) (bool, error)
+	Validate(val interface{}) (bool, error)
 }
 
-type GenericValidator struct {}
+type GenericValidator struct{}
 
 func (v GenericValidator) Validate(val interface{}) (bool, error) {
 	return true, nil
@@ -24,12 +26,16 @@ func ValueExcluded(str string, excludeList string) (bool, error) {
 
 		// If one value (e.g. "GBP")
 		if !strings.Contains(excludeList, "|") {
-			if str == excludeList {return false, fmt.Errorf("is excluded")}
+			if str == excludeList {
+				return false, fmt.Errorf("is excluded")
+			}
 		} else { // Else (e.g. "GBP|EUR")
 			excludeArray := strings.Split(excludeList, "|")
 			excludeArraySize := len(excludeArray)
 			for i := 0; i < excludeArraySize; i++ {
-				if str == excludeArray[i] {return false, fmt.Errorf("is excluded")}
+				if str == excludeArray[i] {
+					return false, fmt.Errorf("is excluded")
+				}
 			}
 		}
 	}

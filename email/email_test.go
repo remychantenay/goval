@@ -1,60 +1,76 @@
 package email
 
 import (
-	"testing"
-	"reflect"
 	"github.com/remychantenay/goval/generic"
+	"reflect"
+	"strings"
+	"testing"
 )
 
-type TestEmail struct {
-	Value 					string		`goval:"email,required=true,domain=google.com"`
-	ValueWithoutConstraint 	string		`goval:"email"`
+// Email represents the struct under test
+type Email struct {
+	Value                  string `goval:"email,required=true,domain=google.com"`
+	ValueWithoutConstraint string `goval:"email"`
 }
 
-func validate(testedStruct TestEmail, index int) (bool, error) {
+func TestEmail_Err(t *testing.T) {
+	tests := []struct {
+		description      string
+		expectedErrorMsg string
+		with             Email
+		index            int
+	}{
+		{
+			description:      "Invalid",
+			expectedErrorMsg: "is an invalid email address",
+			with: Email{
+				Value: "somethingnotvalid",
+			},
+			index: 0,
+		},
+		{
+			description:      "Empty with constraint",
+			expectedErrorMsg: "cannot be blank",
+			with: Email{
+				Value:                  "",
+				ValueWithoutConstraint: "",
+			},
+			index: 0,
+		},
+		{
+			description:      "Invalid domain",
+			expectedErrorMsg: "is an invalid domain",
+			with: Email{
+				Value: "john.smith@facebook.com",
+			},
+			index: 0,
+		},
+	}
+
+	for _, test := range tests {
+		_, err := validate(test.with, test.index)
+		if err == nil {
+			t.Fatalf("%s -> was expecting %s", test.description, test.expectedErrorMsg)
+		}
+
+		if err.Error() != test.expectedErrorMsg {
+			t.Fatalf("%s -> Got %s but expected %s ", test.description, err.Error(), test.expectedErrorMsg)
+		}
+	}
+}
+
+func TestEmail_Success(t *testing.T) {
+	_, err := validate(Email{"john.smith@google.com", ""}, 0)
+
+	if err != nil {
+		t.Fatalf("No error expected but got %s", err.Error())
+	}
+}
+
+// validate is a convenience function
+func validate(testedStruct Email, index int) (bool, error) {
 	structValue := reflect.ValueOf(testedStruct)
-	return BuildEmailValidatorWithFullTag(generic.ExtractTag(structValue, index)).Validate(structValue.Field(index).Interface())
-}
-
-func TestEmailEmptyWithConstraint(t *testing.T) {
-	_, actualResult := validate(TestEmail{"", ""}, 0)
-	var expectedResult = "cannot be blank"
-
-	if actualResult.Error() != expectedResult {
-		t.Fatalf("Expected %s but got %s", expectedResult, actualResult)
-	}
-}
-
-func TestEmailValid(t *testing.T) {
-	_, actualResult := validate(TestEmail{"john.smith@google.com", ""}, 0)
-
-	if actualResult != nil {
-		t.Fatalf("No error expected but got %s", actualResult.Error())
-	}
-}
-
-func TestEmailInvalid(t *testing.T) {
-	_, actualResult := validate(TestEmail{"somethingnotvalid", ""}, 0)
-	var expectedResult = "is an invalid email address"
-
-	if actualResult.Error() != expectedResult {
-		t.Fatalf("Expected %s but got %s", expectedResult, actualResult)
-	}
-}
-
-func TestEmailEmptyWithoutConstraint(t *testing.T) {
-	_, actualResult := validate(TestEmail{"", ""}, 1)
-
-	if actualResult != nil {
-		t.Fatalf("No error expected but got %s", actualResult.Error())
-	}
-}
-
-func TestEmailInvalidDomainWithConstraint(t *testing.T) {
-	_, actualResult := validate(TestEmail{"john.smith@facebook.com", ""}, 0)
-	var expectedResult = "is an invalid domain"
-
-	if actualResult.Error() != expectedResult {
-		t.Fatalf("Expected %s but got %s", expectedResult, actualResult)
-	}
+	tag := generic.ExtractTag(structValue, index)
+	args := strings.Split(tag, ",")
+	return NewValidator(args[1:]).Validate(structValue.Field(index).Interface())
 }

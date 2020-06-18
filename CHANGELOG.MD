@@ -1,4 +1,11 @@
-# Changelog
+# CHANGELOG
+
+## v1.2.0
+* Better behaviour in concurrent environments
+* Performance improvements
+* Refactoring and clean-up
+* Changed license
+* Added various badges
 
 ## v1.1.1
 * Use of `int64` instead of `int` for `number`.

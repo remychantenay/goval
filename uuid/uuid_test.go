@@ -1,78 +1,113 @@
 package uuid
 
 import (
-	"testing"
-	"reflect"
 	"github.com/remychantenay/goval/generic"
+	"reflect"
+	"strings"
+	"testing"
 )
 
-type TestUuid struct {
-	Value 					string		`goval:"uuid,required=true"`
-	ValueWithoutConstraint 	string		`goval:"uuid"`
+// UUID represents the struct under test
+type UUID struct {
+	Value                  string `goval:"uuid,required=true"`
+	ValueWithoutConstraint string `goval:"uuid"`
 }
 
-func validate(testedStruct TestUuid, index int) (bool, error) {
+func TestUUID_Err(t *testing.T) {
+	tests := []struct {
+		description      string
+		expectedErrorMsg string
+		with             UUID
+		index            int
+	}{
+		{
+			description:      "Too Short with constraint",
+			expectedErrorMsg: "should be 36 characters long",
+			with: UUID{
+				Value: "47bd",
+			},
+			index: 0,
+		},
+		{
+			description:      "Too long with constraint",
+			expectedErrorMsg: "should be 36 characters long",
+			with: UUID{
+				Value: "f025b018-a0cb-47bd-97ce-f460f20e3b255555555",
+			},
+			index: 0,
+		},
+		{
+			description:      "Too Short without constraint",
+			expectedErrorMsg: "should be 36 characters long",
+			with: UUID{
+				ValueWithoutConstraint: "47bd",
+			},
+			index: 1,
+		},
+		{
+			description:      "Too long without constraint",
+			expectedErrorMsg: "should be 36 characters long",
+			with: UUID{
+				ValueWithoutConstraint: "f025b018-a0cb-47bd-97ce-f460f20e3b255555555",
+			},
+			index: 1,
+		},
+		{
+			description:      "Empty",
+			expectedErrorMsg: "cannot be blank",
+			with: UUID{
+				Value: "",
+			},
+			index: 0,
+		},
+	}
+
+	for _, test := range tests {
+		_, err := validate(test.with, test.index)
+		if err == nil {
+			t.Fatalf("%s -> was expecting %s", test.description, test.expectedErrorMsg)
+		}
+
+		if err.Error() != test.expectedErrorMsg {
+			t.Fatalf("%s -> Got %s but expected %s ", test.description, err.Error(), test.expectedErrorMsg)
+		}
+	}
+}
+
+func TestUUID_Success(t *testing.T) {
+	tests := []struct {
+		description string
+		with        UUID
+		index       int
+	}{
+		{
+			description: "Success with constraint",
+			with: UUID{
+				Value: "f025b018-a0cb-47bd-97ce-f460f20e3b25",
+			},
+			index: 0,
+		},
+		{
+			description: "Empty without constraint",
+			with: UUID{
+				ValueWithoutConstraint: "",
+			},
+			index: 1,
+		},
+	}
+
+	for _, test := range tests {
+		_, err := validate(test.with, test.index)
+		if err != nil {
+			t.Fatalf("%s -> was not expecting error but got %s", test.description, err.Error())
+		}
+	}
+}
+
+// validate is a convenience function
+func validate(testedStruct UUID, index int) (bool, error) {
 	structValue := reflect.ValueOf(testedStruct)
-	return BuildUuidValidatorWithFullTag(generic.ExtractTag(structValue, index)).Validate(structValue.Field(index).Interface())
-}
-
-func TestUuidShortWithConstraint(t *testing.T) {
-	_, actualResult := validate(TestUuid{"47bd", ""}, 0)
-	var expectedResult = "should be 36 characters long"
-
-	if actualResult.Error() != expectedResult {
-		t.Fatalf("Expected %s but got %s", expectedResult, actualResult)
-	}
-}
-
-func TestUuidTooLongWithConstraint(t *testing.T) {
-	_, actualResult := validate(TestUuid{"f025b018-a0cb-47bd-97ce-f460f20e3b255555555", ""}, 0)
-	var expectedResult = "should be 36 characters long"
-
-	if actualResult.Error() != expectedResult {
-		t.Fatalf("Expected %s but got %s", expectedResult, actualResult)
-	}
-}
-
-func TestUuidEmptyWithConstraint(t *testing.T) {
-	_, actualResult := validate(TestUuid{"", ""}, 0)
-	var expectedResult = "cannot be blank"
-
-	if actualResult.Error() != expectedResult {
-		t.Fatalf("Expected %s but got %s", expectedResult, actualResult)
-	}
-}
-
-func TestUuidOK(t *testing.T) {
-	_, actualResult := validate(TestUuid{"f025b018-a0cb-47bd-97ce-f460f20e3b25", ""}, 0)
-
-	if actualResult != nil {
-		t.Fatalf("No error expected but got %s", actualResult.Error())
-	}
-}
-
-func TestUuidShortWithoutConstraint(t *testing.T) {
-	_, actualResult := validate(TestUuid{"", "f025b018-a0cb-47bd-97ce-"}, 1)
-	var expectedResult = "should be 36 characters long"
-
-	if actualResult.Error() != expectedResult {
-		t.Fatalf("Expected %s but got %s", expectedResult, actualResult)
-	}
-}
-
-func TestUuidTooLongWithoutConstraint(t *testing.T) {
-	_, actualResult := validate(TestUuid{"", "f025b018-a0cb-47bd-97ce-f460f20e3b25555555"}, 1)
-	var expectedResult = "should be 36 characters long"
-
-	if actualResult.Error() != expectedResult {
-		t.Fatalf("Expected %s but got %s", expectedResult, actualResult)
-	}
-}
-
-func TestUuidEmptyWithoutConstraint(t *testing.T) {
-	_, actualResult := validate(TestUuid{"", ""}, 1)
-
-	if actualResult != nil {
-		t.Fatalf("No error expected but got %s", actualResult.Error())
-	}
+	tag := generic.ExtractTag(structValue, index)
+	args := strings.Split(tag, ",")
+	return NewValidator(args[1:]).Validate(structValue.Field(index).Interface())
 }

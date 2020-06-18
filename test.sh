@@ -1,3 +1,2 @@
 #!/bin/bash
-go test
-go test -v ./...
+go test ./... -short

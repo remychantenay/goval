@@ -4,68 +4,103 @@ import (
 	"testing"
 )
 
-type TestCountryCode struct {
-	Value 					string		`goval:"country_code,required=true,exclude=US,excludeEu=true"`
-	ValueWithoutConstraint 	string		`goval:"country_code"`
+// TestStruct represents the struct under test
+type TestStruct struct {
+	Value string `goval:"country_code,required=true,exclude=US,excludeEU=true"`
 }
 
-func TestCountryShort(t *testing.T) {
-	actualResult := ValidateStruct(TestCountryCode{"E", ""})[0]
-	var expectedResult = "Value should be 2 characters long"
+func TestValidateStruct_Err(t *testing.T) {
+	tests := []struct {
+		description      string
+		expectedErrorMsg string
+		with             TestStruct
+	}{
+		{
+			description:      "Too short with constraint",
+			expectedErrorMsg: "Value should be 2 characters long",
+			with: TestStruct{
+				Value: "E",
+			},
+		},
+		{
+			description:      "Too long with constraint",
+			expectedErrorMsg: "Value should be 2 characters long",
+			with: TestStruct{
+				Value: "EEEE",
+			},
+		},
+		{
+			description:      "Invalid",
+			expectedErrorMsg: "Value is an invalid country code",
+			with: TestStruct{
+				Value: "RR",
+			},
+		},
+		{
+			description:      "Empty",
+			expectedErrorMsg: "Value cannot be blank",
+			with: TestStruct{
+				Value: "",
+			},
+		},
+		{
+			description:      "Country excluded",
+			expectedErrorMsg: "Value is excluded",
+			with: TestStruct{
+				Value: "US",
+			},
+		},
+	}
 
-	if actualResult.Error() != expectedResult {
-		t.Fatalf("Expected %s but got %s", expectedResult, actualResult)
+	for _, test := range tests {
+		err := ValidateStruct(test.with)[0]
+		if err == nil {
+			t.Fatalf("%s -> was expecting %s", test.description, test.expectedErrorMsg)
+		}
+
+		if err.Error() != test.expectedErrorMsg {
+			t.Fatalf("%s -> Got %s but expected %s ", test.description, err.Error(), test.expectedErrorMsg)
+		}
 	}
 }
 
-func TestCountryTooLong(t *testing.T) {
-	actualResult := ValidateStruct(TestCountryCode{"EEEE", ""})[0]
-	var expectedResult = "Value should be 2 characters long"
+func TestValidateStruct_Success(t *testing.T) {
+	tests := []struct {
+		description string
+		with        TestStruct
+	}{
+		{
+			description: "Success with constraint",
+			with: TestStruct{
+				Value: "CH",
+			},
+		},
+	}
 
-	if actualResult.Error() != expectedResult {
-		t.Fatalf("Expected %s but got %s", expectedResult, actualResult)
+	for _, test := range tests {
+		errs := ValidateStruct(test.with)
+		if errs != nil && len(errs) > 0 {
+			t.Fatalf("%s -> was not expecting error but got %s", test.description, errs[0].Error())
+		}
 	}
 }
 
-func TestCountryInvalid(t *testing.T) {
-	actualResult := ValidateStruct(TestCountryCode{"RR", ""})[0]
-	var expectedResult = "Value is an invalid country code"
+func BenchmarkValidateStruct(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		benchmarks := []struct {
+			description string
+			with        TestStruct
+		}{
+			{
+				description: "Success with constraint",
+				with: TestStruct{
+					Value: "CH",
+				},
+			},
+		}
 
-	if actualResult.Error() != expectedResult {
-		t.Fatalf("Expected %s but got %s", expectedResult, actualResult)
-	}
-}
-
-func TestCountryEmptyWithConstraint(t *testing.T) {
-	actualResult := ValidateStruct(TestCountryCode{"", ""})[0]
-	var expectedResult = "Value cannot be blank"
-
-	if actualResult.Error() != expectedResult {
-		t.Fatalf("Expected %s but got %s", expectedResult, actualResult)
-	}
-}
-
-func TestCountryExcludedWithConstraint(t *testing.T) {
-	actualResult := ValidateStruct(TestCountryCode{"US", ""})[0]
-	var expectedResult = "Value is excluded"
-
-	if actualResult.Error() != expectedResult {
-		t.Fatalf("Expected %s but got %s", expectedResult, actualResult)
-	}
-}
-
-func TestCountryOK(t *testing.T) {
-	actualResult := ValidateStruct(TestCountryCode{"CH", ""})
-
-	if len(actualResult) != 0 {
-		t.Fatalf("No error expected but got %v error(s)", len(actualResult))
-	}
-}
-
-func TestCountryEmptyWithoutConstraint(t *testing.T) {
-	actualResult := ValidateStruct(TestCountryCode{"CH", ""})
-
-	if len(actualResult) != 0 {
-		t.Fatalf("No error expected but got %v error(s)", len(actualResult))
+		for _, benchmark := range benchmarks {
+			ValidateStruct(benchmark.with)
+		}
 	}
 }
