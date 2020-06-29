@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v1.2.1
+* Minor refactoring
+
 ## v1.2.0
 * Better behaviour in concurrent environments
 * Performance improvements

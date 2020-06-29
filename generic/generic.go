@@ -16,6 +16,7 @@ type Validator interface {
 
 type GenericValidator struct{}
 
+// Validate will validates a given field.
 func (v GenericValidator) Validate(val interface{}) (bool, error) {
 	return true, nil
 }

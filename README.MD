@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 # goval
-Simple Struct validation library for Go. Uses reflection.
+Struct validation library for Go using tags and therefore uses reflection.
 
 ## Tags & Constraints
 | Tag | Constraints | Additional Information |
@@ -46,7 +46,7 @@ for i, err := range result {
 }
 ```
 
-## Transitive Dependencies
+## Dependencies
 ```
 github.com/satori/go.uuid
 ```

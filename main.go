@@ -22,6 +22,7 @@ const (
 	argTypeCountryCode = "country_code"
 	argTypeCurrency    = "currency"
 	argTypeEnum        = "enum"
+	charIgnore         = "-"
 )
 
 // ValidateStruct validates any struct containing the nameTag goval
@@ -29,12 +30,13 @@ func ValidateStruct(s interface{}) []error {
 	errs := []error{}
 
 	structValue := reflect.ValueOf(s)
+	numFields := structValue.NumField()
 
-	for i := 0; i < structValue.NumField(); i++ {
+	for i := 0; i < numFields; i++ {
 		tag := generic.ExtractTag(structValue, i)
 
 		// Skip if tag is not defined or ignored
-		if tag == "" || tag == "-" {
+		if len(tag) == 0 || tag == charIgnore {
 			continue
 		}
 

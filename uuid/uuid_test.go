@@ -60,6 +60,14 @@ func TestUUID_Err(t *testing.T) {
 			},
 			index: 0,
 		},
+		{
+			description:      "Empty without constraint",
+			expectedErrorMsg: "should be 36 characters long",
+			with: UUID{
+				ValueWithoutConstraint: "",
+			},
+			index: 1,
+		},
 	}
 
 	for _, test := range tests {
@@ -86,13 +94,6 @@ func TestUUID_Success(t *testing.T) {
 				Value: "f025b018-a0cb-47bd-97ce-f460f20e3b25",
 			},
 			index: 0,
-		},
-		{
-			description: "Empty without constraint",
-			with: UUID{
-				ValueWithoutConstraint: "",
-			},
-			index: 1,
 		},
 	}
 

@@ -9,24 +9,27 @@ import (
 )
 
 const (
-	// argConstraintMax
-	argConstraintMax = "max="
 
-	// argConstraintMin
-	argConstraintMin = "min="
-
-	// argConstraintRequired
+	// argConstraintRequired defines whether or not the field is required.
+	// In this context, required means not nil and not blank.
 	argConstraintRequired = "required="
 
-	// argConstraintDomain (e.g. @google.com)
+	// argConstraintMax defines the maximum number of characters allowed.
+	argConstraintMax = "max="
+
+	// argConstraintMin defines the minimum number of characters allowed.
+	argConstraintMin = "min="
+
+	// argConstraintDomain defines if only one domain is expected
+	// (e.g. @google.com)
 	argConstraintDomain = "domain="
 )
 
 type emailValidator struct {
-	Min      int
-	Max      int
-	Required bool
-	Domain   string
+	min      int
+	max      int
+	required bool
+	domain   string
 }
 
 // regEx will be lazy loaded (via sync.Once)
@@ -34,7 +37,7 @@ var regEx *regexp.Regexp
 var regExOnce sync.Once
 
 func (v *emailValidator) Validate(val interface{}) (bool, error) {
-	if val == nil && v.Required {
+	if val == nil && v.required {
 		return false, fmt.Errorf("cannot be nil")
 	}
 
@@ -42,15 +45,15 @@ func (v *emailValidator) Validate(val interface{}) (bool, error) {
 	l := len(str)
 
 	if l == 0 {
-		if v.Required {
+		if v.required {
 			return false, fmt.Errorf("cannot be blank")
 		}
 	} else {
-		if v.Min != -1 && l < v.Min {
-			return false, fmt.Errorf("should be at least %v characters long", v.Min)
+		if v.min != -1 && l < v.min {
+			return false, fmt.Errorf("should be at least %d characters long", v.min)
 		}
-		if v.Max != -1 && v.Max >= v.Min && l > v.Max {
-			return false, fmt.Errorf("should be less than %v characters long", v.Max)
+		if v.max != -1 && v.max >= v.min && l > v.max {
+			return false, fmt.Errorf("should be less than %d characters long", v.max)
 		}
 
 		// Lazy loading the regular expression
@@ -63,7 +66,7 @@ func (v *emailValidator) Validate(val interface{}) (bool, error) {
 			return false, fmt.Errorf("is an invalid email address")
 		}
 
-		if len(v.Domain) != 0 && !strings.Contains(str, v.Domain) {
+		if len(v.domain) != 0 && !strings.Contains(str, v.domain) {
 			return false, fmt.Errorf("is an invalid domain")
 		}
 	}
@@ -74,16 +77,16 @@ func (v *emailValidator) Validate(val interface{}) (bool, error) {
 // NewValidator builds the validator for email addresses
 func NewValidator(args []string) generic.Validator {
 	validator := emailValidator{-1, -1, false, ""}
-	count := len(args) - 1
-	for i := 0; i <= count; i++ {
+
+	for i := 0; i < len(args); i++ {
 		if strings.Contains(args[i], argConstraintMax) {
-			fmt.Sscanf(args[i], argConstraintMax+"%d", &validator.Max)
+			fmt.Sscanf(args[i], argConstraintMax+"%d", &validator.max)
 		} else if strings.Contains(args[i], argConstraintMin) {
-			fmt.Sscanf(args[i], argConstraintMin+"%d", &validator.Min)
+			fmt.Sscanf(args[i], argConstraintMin+"%d", &validator.min)
 		} else if strings.Contains(args[i], argConstraintRequired) {
-			fmt.Sscanf(args[i], argConstraintRequired+"%t", &validator.Required)
+			fmt.Sscanf(args[i], argConstraintRequired+"%t", &validator.required)
 		} else if strings.Contains(args[i], argConstraintDomain) {
-			fmt.Sscanf(args[i], argConstraintDomain+"%s", &validator.Domain)
+			fmt.Sscanf(args[i], argConstraintDomain+"%s", &validator.domain)
 		}
 	}
 	return &validator

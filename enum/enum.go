@@ -18,24 +18,24 @@ const (
 )
 
 type enumValidator struct {
-	Required bool
-	Values   string
+	required bool
+	values   string
 }
 
 // Validate validate a specific field
 func (v *enumValidator) Validate(val interface{}) (bool, error) {
-	if val == nil && v.Required {
+	if val == nil && v.required {
 		return false, fmt.Errorf("cannot be nil")
 	}
 
 	str := val.(string)
 	l := len(str)
 
-	if l == 0 && v.Required {
+	if l == 0 && v.required {
 		return false, fmt.Errorf("cannot be blank")
 	}
 
-	b, err := inValues(str, v.Values)
+	b, err := inValues(str, v.values)
 	if !b {
 		return b, err
 	}
@@ -62,9 +62,9 @@ func NewValidator(args []string) generic.Validator {
 	validator := enumValidator{false, ""}
 	for i := 0; i < len(args); i++ {
 		if strings.Contains(args[i], argConstraintRequired) {
-			fmt.Sscanf(args[i], argConstraintRequired+"%t", &validator.Required)
+			fmt.Sscanf(args[i], argConstraintRequired+"%t", &validator.required)
 		} else if strings.Contains(args[i], argConstraintValues) {
-			fmt.Sscanf(args[i], argConstraintValues+"%s", &validator.Values)
+			fmt.Sscanf(args[i], argConstraintValues+"%s", &validator.values)
 		}
 	}
 	return &validator
