@@ -2,10 +2,11 @@ package email
 
 import (
 	"fmt"
-	"github.com/remychantenay/goval/generic"
 	"regexp"
 	"strings"
 	"sync"
+
+	"github.com/remychantenay/goval/generic"
 )
 
 const (
@@ -24,6 +25,10 @@ const (
 	// (e.g. @google.com)
 	argConstraintDomain = "domain="
 )
+
+var pool = sync.Pool{
+	New: func() interface{} { return &emailValidator{-1, -1, false, ""} },
+}
 
 type emailValidator struct {
 	min      int
@@ -76,7 +81,13 @@ func (v *emailValidator) Validate(val interface{}) (bool, error) {
 
 // NewValidator builds the validator for email addresses
 func NewValidator(args []string) generic.Validator {
-	validator := emailValidator{-1, -1, false, ""}
+	validator := pool.Get().(*emailValidator)
+	defer pool.Put(validator)
+	if validator.max != -1 {
+		validator.min, validator.max = -1, -1
+		validator.required = false
+		validator.domain = ""
+	}
 
 	for i := 0; i < len(args); i++ {
 		if strings.Contains(args[i], argConstraintMax) {
@@ -89,5 +100,5 @@ func NewValidator(args []string) generic.Validator {
 			fmt.Sscanf(args[i], argConstraintDomain+"%s", &validator.domain)
 		}
 	}
-	return &validator
+	return validator
 }

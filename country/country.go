@@ -2,10 +2,11 @@ package country
 
 import (
 	"fmt"
-	"github.com/remychantenay/goval/generic"
 	"regexp"
 	"strings"
 	"sync"
+
+	"github.com/remychantenay/goval/generic"
 )
 
 const (
@@ -21,6 +22,10 @@ const (
 	argConstraintExclude = "exclude="
 )
 
+var pool = sync.Pool{
+	New: func() interface{} { return &countryCodeValidator{false, false, ""} },
+}
+
 type countryCodeValidator struct {
 	required  bool
 	excludeEU bool
@@ -35,21 +40,6 @@ type RegularExpressions struct {
 
 var countryCodeRegularExpressions RegularExpressions
 var loadRegularExpressionsOnce sync.Once
-
-// NewValidator build and return the validator for country codes (e.g. US)
-func NewValidator(args []string) generic.Validator {
-	validator := countryCodeValidator{false, false, ""}
-	for i := 0; i < len(args); i++ {
-		if strings.Contains(args[i], argConstraintRequired) {
-			fmt.Sscanf(args[i], argConstraintRequired+"%t", &validator.required)
-		} else if strings.Contains(args[i], argConstraintexcludeEU) {
-			fmt.Sscanf(args[i], argConstraintexcludeEU+"%t", &validator.excludeEU)
-		} else if strings.Contains(args[i], argConstraintExclude) {
-			fmt.Sscanf(args[i], argConstraintExclude+"%s", &validator.exclude)
-		}
-	}
-	return &validator
-}
 
 // Validate validates the given struct
 //
@@ -95,4 +85,25 @@ func (v *countryCodeValidator) Validate(val interface{}) (bool, error) {
 	}
 
 	return true, nil
+}
+
+// NewValidator build and return the validator for country codes (e.g. US)
+func NewValidator(args []string) generic.Validator {
+	v := pool.Get().(*countryCodeValidator)
+	defer pool.Put(v)
+	if !v.required || v.exclude != "" || !v.excludeEU {
+		v.required = false
+		v.exclude = ""
+		v.excludeEU = false
+	}
+	for i := 0; i < len(args); i++ {
+		if strings.Contains(args[i], argConstraintRequired) {
+			fmt.Sscanf(args[i], argConstraintRequired+"%t", &v.required)
+		} else if strings.Contains(args[i], argConstraintexcludeEU) {
+			fmt.Sscanf(args[i], argConstraintexcludeEU+"%t", &v.excludeEU)
+		} else if strings.Contains(args[i], argConstraintExclude) {
+			fmt.Sscanf(args[i], argConstraintExclude+"%s", &v.exclude)
+		}
+	}
+	return v
 }

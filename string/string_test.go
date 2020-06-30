@@ -1,15 +1,19 @@
 package string
 
 import (
-	"github.com/remychantenay/goval/generic"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/remychantenay/goval/generic"
 )
 
 // String represents the struct under test
 type String struct {
 	Value                  string `goval:"string,min=10,max=15,required=true"` // With constraints
+	Value2                 string `goval:"string,required=false"`
+	Value3                 string `goval:"string,required=false"`
+	Value4                 string `goval:"string,required=false"`
 	ValueWithoutConstraint string `goval:"string"`
 }
 
@@ -100,6 +104,126 @@ func TestString_Success(t *testing.T) {
 			t.Fatalf("%s -> was not expecting error but got %s", test.description, err.Error())
 		}
 	}
+}
+
+func BenchmarkString_WithoutPool(b *testing.B) {
+	b.StopTimer()
+
+	tests := []struct {
+		description string
+		with        String
+		index       int
+	}{
+		{
+			description: "Success with constraint",
+			with: String{
+				Value:  "ValidString",
+				Value2: "Another String",
+				Value3: "And Another One",
+				Value4: "One More Time",
+			},
+			index: 0,
+		},
+		{
+			description: "Success without constraint",
+			with: String{
+				ValueWithoutConstraint: "",
+				Value2:                 "Another String",
+				Value3:                 "And Another One",
+				Value4:                 "One More Time",
+			},
+			index: 1,
+		},
+		{
+			description: "Too short without constraint",
+			with: String{
+				ValueWithoutConstraint: "tooShort",
+				Value2:                 "Another String",
+				Value3:                 "And Another One",
+				Value4:                 "One More Time",
+			},
+			index: 1,
+		},
+		{
+			description: "Too long without constraint",
+			with: String{
+				ValueWithoutConstraint: "wayTooooooooooooooooooLong",
+				Value2:                 "Another String",
+				Value3:                 "And Another One",
+				Value4:                 "One More Time",
+			},
+			index: 1,
+		},
+	}
+
+	b.StartTimer()
+	for n := 0; n < b.N; n++ {
+		for _, test := range tests {
+			structValue := reflect.ValueOf(test.with)
+			tag := generic.ExtractTag(structValue, test.index)
+			args := strings.Split(tag, ",")
+			NewValidatorWithoutPool(args[1:]).Validate(structValue.Field(test.index).Interface())
+		}
+	}
+	b.StopTimer()
+}
+
+func BenchmarkString_WithPool(b *testing.B) {
+	b.StopTimer()
+	tests := []struct {
+		description string
+		with        String
+		index       int
+	}{
+		{
+			description: "Success with constraint",
+			with: String{
+				Value:  "ValidString",
+				Value2: "Another String",
+				Value3: "And Another One",
+				Value4: "One More Time",
+			},
+			index: 0,
+		},
+		{
+			description: "Success without constraint",
+			with: String{
+				ValueWithoutConstraint: "",
+				Value2:                 "Another String",
+				Value3:                 "And Another One",
+				Value4:                 "One More Time",
+			},
+			index: 1,
+		},
+		{
+			description: "Too short without constraint",
+			with: String{
+				ValueWithoutConstraint: "tooShort",
+				Value2:                 "Another String",
+				Value3:                 "And Another One",
+				Value4:                 "One More Time",
+			},
+			index: 1,
+		},
+		{
+			description: "Too long without constraint",
+			with: String{
+				ValueWithoutConstraint: "wayTooooooooooooooooooLong",
+				Value2:                 "Another String",
+				Value3:                 "And Another One",
+				Value4:                 "One More Time",
+			},
+			index: 1,
+		},
+	}
+
+	b.StartTimer()
+	for n := 0; n < b.N; n++ {
+		for _, test := range tests {
+			validate(test.with, test.index)
+		}
+	}
+	b.StopTimer()
 }
 
 // validate is a convenience function

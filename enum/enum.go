@@ -2,8 +2,10 @@ package enum
 
 import (
 	"fmt"
-	"github.com/remychantenay/goval/generic"
 	"strings"
+	"sync"
+
+	"github.com/remychantenay/goval/generic"
 )
 
 const (
@@ -16,6 +18,10 @@ const (
 	// argConstraintValues: Exclusion parameters must be separated by a pipe (e.g. exclude=EUR|GBP)
 	argConstraintValues = "values="
 )
+
+var pool = sync.Pool{
+	New: func() interface{} { return new(enumValidator) },
+}
 
 type enumValidator struct {
 	required bool
@@ -59,7 +65,13 @@ func inValues(str string, valueList string) (bool, error) {
 
 // NewValidator build and returns the validator for enums
 func NewValidator(args []string) generic.Validator {
-	validator := enumValidator{false, ""}
+	validator := pool.Get().(*enumValidator)
+	defer pool.Put(validator)
+	if validator.values != "" {
+		validator.required = false
+		validator.values = ""
+	}
+
 	for i := 0; i < len(args); i++ {
 		if strings.Contains(args[i], argConstraintRequired) {
 			fmt.Sscanf(args[i], argConstraintRequired+"%t", &validator.required)
@@ -67,5 +79,5 @@ func NewValidator(args []string) generic.Validator {
 			fmt.Sscanf(args[i], argConstraintValues+"%s", &validator.values)
 		}
 	}
-	return &validator
+	return validator
 }

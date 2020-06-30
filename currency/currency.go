@@ -2,10 +2,11 @@ package currency
 
 import (
 	"fmt"
-	"github.com/remychantenay/goval/generic"
 	"regexp"
 	"strings"
 	"sync"
+
+	"github.com/remychantenay/goval/generic"
 )
 
 const (
@@ -22,6 +23,10 @@ const (
 	// expectedLength - ISO-4217
 	expectedLength = 3
 )
+
+var pool = sync.Pool{
+	New: func() interface{} { return &currencyValidator{false, ""} },
+}
 
 type currencyValidator struct {
 	required bool
@@ -68,7 +73,12 @@ func (v *currencyValidator) Validate(val interface{}) (bool, error) {
 
 // NewValidator build and return the validator for currency codes (e.g. EUR)
 func NewValidator(args []string) generic.Validator {
-	validator := currencyValidator{false, ""}
+	validator := pool.Get().(*currencyValidator)
+	defer pool.Put(validator)
+	if !validator.required || validator.exclude != "" {
+		validator.required = false
+		validator.exclude = ""
+	}
 
 	for i := 0; i < len(args); i++ {
 		if strings.Contains(args[i], argConstraintRequired) {
@@ -77,5 +87,5 @@ func NewValidator(args []string) generic.Validator {
 			fmt.Sscanf(args[i], argConstraintExclude+"%s", &validator.exclude)
 		}
 	}
-	return &validator
+	return validator
 }

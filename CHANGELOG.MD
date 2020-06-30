@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v1.2.2
+* Performance improvements for large structs (using `sync.Pool` for validators).
+
 ## v1.2.1
 * Minor refactoring
 

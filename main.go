@@ -2,6 +2,9 @@ package goval
 
 import (
 	"fmt"
+	"reflect"
+	"strings"
+
 	"github.com/remychantenay/goval/country"
 	"github.com/remychantenay/goval/currency"
 	"github.com/remychantenay/goval/email"
@@ -10,8 +13,6 @@ import (
 	"github.com/remychantenay/goval/number"
 	str "github.com/remychantenay/goval/string"
 	"github.com/remychantenay/goval/uuid"
-	"reflect"
-	"strings"
 )
 
 const (

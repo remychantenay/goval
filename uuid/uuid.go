@@ -2,9 +2,11 @@ package uuid
 
 import (
 	"fmt"
-	"github.com/remychantenay/goval/generic"
-	"github.com/satori/go.uuid"
 	"strings"
+	"sync"
+
+	"github.com/remychantenay/goval/generic"
+	uuid "github.com/satori/go.uuid"
 )
 
 const (
@@ -12,6 +14,10 @@ const (
 	// In this context, required means not nil and not blank.
 	argConstraintRequired = "required="
 )
+
+var pool = sync.Pool{
+	New: func() interface{} { return new(uuidValidator) },
+}
 
 type uuidValidator struct {
 	required bool
@@ -44,12 +50,13 @@ func (v *uuidValidator) Validate(val interface{}) (bool, error) {
 
 // NewValidator builds and returns the validator for UUIDs.
 func NewValidator(args []string) generic.Validator {
-	validator := uuidValidator{}
-	count := len(args)
-	for i := 0; i < count; i++ {
+	validator := pool.Get().(*uuidValidator)
+	defer pool.Put(validator)
+
+	for i := 0; i < len(args); i++ {
 		if strings.Contains(args[i], argConstraintRequired) {
 			fmt.Sscanf(args[i], argConstraintRequired+"%t", &validator.required)
 		}
 	}
-	return &validator
+	return validator
 }

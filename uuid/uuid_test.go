@@ -1,10 +1,11 @@
 package uuid
 
 import (
-	"github.com/remychantenay/goval/generic"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/remychantenay/goval/generic"
 )
 
 // UUID represents the struct under test
@@ -62,9 +63,9 @@ func TestUUID_Err(t *testing.T) {
 		},
 		{
 			description:      "Empty without constraint",
-			expectedErrorMsg: "should be 36 characters long",
+			expectedErrorMsg: "cannot be blank",
 			with: UUID{
-				ValueWithoutConstraint: "",
+				Value: "",
 			},
 			index: 1,
 		},

@@ -2,8 +2,10 @@ package string
 
 import (
 	"fmt"
-	"github.com/remychantenay/goval/generic"
 	"strings"
+	"sync"
+
+	"github.com/remychantenay/goval/generic"
 )
 
 const (
@@ -17,6 +19,10 @@ const (
 	// argConstraintMin defines the minimum number of characters allowed.
 	argConstraintMin = "min="
 )
+
+var pool = sync.Pool{
+	New: func() interface{} { return &stringValidator{-1, -1, false} },
+}
 
 type stringValidator struct {
 	min      int
@@ -49,6 +55,28 @@ func (v *stringValidator) Validate(val interface{}) (bool, error) {
 
 // NewValidator builds the validator for strings
 func NewValidator(args []string) generic.Validator {
+	validator := pool.Get().(*stringValidator)
+	defer pool.Put(validator)
+	if validator.max != -1 {
+		validator.min, validator.max = -1, -1
+		validator.required = false
+	}
+
+	for i := 0; i < len(args); i++ {
+		if strings.Contains(args[i], argConstraintMax) {
+			fmt.Sscanf(args[i], argConstraintMax+"%d", &validator.max)
+		} else if strings.Contains(args[i], argConstraintMin) {
+			fmt.Sscanf(args[i], argConstraintMin+"%d", &validator.min)
+		} else if strings.Contains(args[i], argConstraintRequired) {
+			fmt.Sscanf(args[i], argConstraintRequired+"%t", &validator.required)
+		}
+	}
+	return validator
+}
+
+// NewValidatorWithoutPool builds the validator for strings
+// Only here for benchmark purposes
+func NewValidatorWithoutPool(args []string) generic.Validator {
 	validator := stringValidator{-1, -1, false}
 
 	for i := 0; i < len(args); i++ {

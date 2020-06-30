@@ -2,8 +2,10 @@ package number
 
 import (
 	"fmt"
-	"github.com/remychantenay/goval/generic"
 	"strings"
+	"sync"
+
+	"github.com/remychantenay/goval/generic"
 )
 
 const (
@@ -17,6 +19,10 @@ const (
 	// argConstraintMax defines the minimum value allowed.
 	argConstraintMin = "min="
 )
+
+var pool = sync.Pool{
+	New: func() interface{} { return &numberValidator{-1, -1, false} },
+}
 
 type numberValidator struct {
 	min      int64
@@ -44,7 +50,12 @@ func (v *numberValidator) Validate(val interface{}) (bool, error) {
 
 // NewValidator allows to build the validator for numbers
 func NewValidator(args []string) generic.Validator {
-	validator := numberValidator{-1, -1, false}
+	validator := pool.Get().(*numberValidator)
+	defer pool.Put(validator)
+	if validator.max != -1 {
+		validator.min, validator.max = -1, -1
+		validator.required = false
+	}
 
 	for i := 0; i < len(args); i++ {
 		if strings.Contains(args[i], argConstraintMax) {
@@ -55,5 +66,5 @@ func NewValidator(args []string) generic.Validator {
 			fmt.Sscanf(args[i], argConstraintRequired+"%t", &validator.required)
 		}
 	}
-	return &validator
+	return validator
 }
