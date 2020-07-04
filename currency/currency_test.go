@@ -1,10 +1,11 @@
 package currency
 
 import (
-	"github.com/remychantenay/goval/generic"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/remychantenay/goval/generic"
 )
 
 // Currency represents the struct under test

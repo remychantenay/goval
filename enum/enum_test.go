@@ -1,10 +1,11 @@
 package enum
 
 import (
-	"github.com/remychantenay/goval/generic"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/remychantenay/goval/generic"
 )
 
 // Enum represents the struct under test
